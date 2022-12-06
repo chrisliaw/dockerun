@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+
+require 'tty/prompt'
+require_relative '../lib/dockerun'
+
+if ARGV.length == 0
+  puts Dockerun::Command::Dockerun.new.help
+
+else
+  pmt = TTY::Prompt.new
+
+  cmd = Dockerun::Command::Dockerun.new 
+  res = cmd.parse(ARGV).params.to_h
+  case res[:command]
+  when "init"
+    initCmd = Dockerun::Command::Init.new
+    argv = ARGV[1..-1]
+    res2 = initCmd.parse(argv).run do |ops, val|
+      case ops
+      when :multiple_templates_detected
+        pmt.select("There are multiple templates available. Please select one of the template : ") do |m|
+          val.each do |v|
+            m.choice v, v
+          end
+        end
+      end
+    end
+
+    STDOUT.puts "\nDockerfile written to '#{res2}'\n\n"
+
+  when "run"
+
+    begin
+      runCmd = Dockerun::Command::Run.new
+      argv = ARGV[1..-1]
+      runCmd.parse(argv).run
+    rescue TTY::Reader::InputInterrupt
+    end
+
+
+  when "run-new-container"
+
+    begin
+      runCmd = Dockerun::Command::RunNewContainer.new
+      argv = ARGV[1..-1]
+      runCmd.parse(argv).run
+    rescue TTY::Reader::InputInterrupt
+    end
+
+
+  when "run-new-image"
+
+    begin
+      runCmd = Dockerun::Command::RunNewImage.new
+      argv = ARGV[1..-1]
+      runCmd.parse(argv).run
+    rescue TTY::Reader::InputInterrupt
+    end
+
+
+  when "reset-image"
+    begin
+      riCmd = Dockerun::Command::ResetImage.new
+      argv = ARGV[1..-1]
+      riCmd.parse(argv).run
+    rescue TTY::Reader::InputInterrupt
+    end
+
+
+  when "rmc"
+    # remove container
+    begin
+      riCmd = Dockerun::Command::RemoveContainer.new
+      argv = ARGV[1..-1]
+      riCmd.parse(argv).run
+    rescue TTY::Reader::InputInterrupt
+    end
+
+
+  else
+    STDERR.puts "Unknown command '#{res[:command]}'"
+    STDOUT.puts cmd.help
+  end
+end
+
