@@ -34,9 +34,8 @@ module Dockerun
           
       end
 
-      def build_image_if_not_exist(name, dockerfile, &block)
+      def build_image_if_not_exist(name, &block)
        
-        raise DockerImageBuildFailed, "Dockerfile is required" if is_empty?(dockerfile)
         raise DockerImageBuildFailed, "block is required" if not block
 
         if is_empty?(name)
@@ -51,11 +50,13 @@ module Dockerun
           if reuse
             
           else
+            dockerfile = load_dockerfile(Dir.getwd)
             build_docker_image(name, dockerfile: dockerfile)
           end
         else
 
             if not is_image_existed?(name)
+              dockerfile = load_dockerfile(Dir.getwd)
               build_docker_image(name, dockerfile: dockerfile)
             end
 
