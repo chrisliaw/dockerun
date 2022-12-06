@@ -36,7 +36,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'tty-command', "~> 0.10.1"
   spec.add_dependency 'tty-option', "~> 0.2.0"
 
-  spec.add_development_dependency 'devops_asssist'
+  spec.add_dependency 'docker-cli'
+
+  spec.add_development_dependency 'devops_assist'
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"

@@ -1,19 +1,8 @@
-GIT
-  remote: docker-cli
-  revision: cd98abd04233e08b846c48a99fc3687602f544c7
-  branch: master
-  specs:
-    docker-cli (0.1.0)
-      ptools
-      teLogger
-      toolrack
-      tty-command
-      tty-prompt
-
 PATH
   remote: .
   specs:
     dockerun (0.1.0)
+      docker-cli
       teLogger (~> 0.2.0)
       toolrack (~> 0.19.1)
       tty-command (~> 0.10.1)
@@ -23,7 +12,30 @@ GEM
   remote: https://rubygems.org/
   specs:
     base58 (0.2.3)
+    devops_assist (0.3.1)
+      git_cli
+      git_cli_prompt
+      gvcs
+      teLogger
+      toolrack
+      tty-prompt
     diff-lcs (1.5.0)
+    docker-cli (0.1.0)
+      ptools
+      teLogger
+      toolrack
+      tty-command
+      tty-prompt
+    git_cli (0.10.0)
+      gvcs
+      ptools (~> 1.4.0)
+      teLogger
+      toolrack
+    git_cli_prompt (0.3.1)
+      teLogger
+      toolrack
+      tty-prompt
+    gvcs (0.1.0)
     pastel (0.8.0)
       tty-color (~> 0.5)
     ptools (1.4.3)
@@ -63,7 +75,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  docker-cli!
+  devops_assist
   dockerun!
   rake (~> 13.0)
   rspec (~> 3.0)
