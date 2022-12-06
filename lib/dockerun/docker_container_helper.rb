@@ -9,39 +9,6 @@ module Dockerun
       class DockerContainerBuildFailed < StandardError; end
       class DockerContainerStartFailed < StandardError; end
 
-      #def new_container(config, dcFact. pmt)
-      #  
-      #  contName = pmt.ask("Please provide a container name : ", required: true)
-      #  res = dcFact.find_from_all_container(contName).run
-      #  if not res[:result].failed? and not_empty?(res[:outStream])
-      #    # already exist
-      #    reuse = pmt.yes?("Container already exist. Use existing container?")
-      #    if reuse
-      #      # ok use existing
-      #      config.add_container_name(contName)
-      #    else
-      #      # don't want to use existing
-      #      keep = pmt.no?("Remove existing container and create new container?")
-      #      if not keep
-      #        # don't want existing container...
-      #        res = dcFact.delete_container(contName).run
-      #        if not res[:result].failed? 
-      #          # done container deleted
-      #        end
-      #      else
-      #        # keep existing container
-      #        STDOUT.puts "Already has existing container with name '#{contName}' but not reusing the container. System cannot proceed. Please either delete or reuse the container"
-      #        exit(-1)
-      #      end
-      #    end
-      #  else
-      #    # yeah name is unique...
-      #    create_new_docker_container(config, contName, dcFact. pmt)
-      #    config.add_container_name(contName)
-      #  end
-
-      #end
-
       def run_docker_container(image_name, container_name, &block)
      
         raise DockerContainerBuildFailed, "block is required" if not block
@@ -85,13 +52,20 @@ module Dockerun
         else
 
           reqVolMap = block.call(:volume_mapping_required?)
-
           mount = []
           if reqVolMap
-            src = block.call(:source_prompt)
-            dest = block.call(:destination_prompt)
-            mount << { src => dest }
-            block.call(:add_mount_to_container, container_name, mount.last)
+
+            loop do
+
+              src = block.call(:source_prompt)
+              dest = block.call(:destination_prompt)
+              mount << { src => dest }
+              block.call(:add_mount_to_container, container_name, mount.last)
+              repeat = block.call(:add_more_volume_mapping?)
+              break if not repeat
+
+            end
+
           end
 
           dcFact.create_container_from_image(image_name, interactive: true, tty: true, container_name: container_name, mount: mount).run

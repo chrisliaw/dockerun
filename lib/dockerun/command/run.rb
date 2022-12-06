@@ -118,6 +118,8 @@ module Dockerun
               cli.ask("Directory to show inside docker : ", required: true)
             when :add_mount_to_container
               config.add_mount_to_container(imageName, *args)
+            when :add_more_volume_mapping?
+              cli.yes?("Add more volume mapping?")
             end
           end
 
