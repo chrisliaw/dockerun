@@ -55,16 +55,10 @@ module Dockerun
           end
         else
 
-          loop do
-            if is_image_existed?(name)
-              proceed, name = block.call(:image_exist, name)
-              break if not proceed
-            else
+            if not is_image_existed?(name)
               build_docker_image(name, dockerfile: dockerfile)
-              break
             end
 
-          end
         end
 
         name
