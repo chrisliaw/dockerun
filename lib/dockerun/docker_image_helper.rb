@@ -53,6 +53,7 @@ module Dockerun
             dockerfile = load_dockerfile(Dir.getwd)
             build_docker_image(name, dockerfile: dockerfile)
           end
+
         else
 
             if not is_image_existed?(name)

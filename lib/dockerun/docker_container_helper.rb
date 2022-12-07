@@ -58,7 +58,7 @@ module Dockerun
             loop do
 
               src = block.call(:source_prompt)
-              dest = block.call(:destination_prompt)
+              dest = block.call(:destination_prompt, src)
               mount << { src => dest }
               block.call(:add_mount_to_container, container_name, mount.last)
               repeat = block.call(:add_more_volume_mapping?)

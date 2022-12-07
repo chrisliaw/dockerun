@@ -62,12 +62,27 @@ module Dockerun
               when :quit
                 break
               else
-                dcFact.stop_container(sel)
-                dcFact.delete_container(sel)
-                config.remove_container(imageName, sel)
-                config.to_storage
+                dcFact.stop_container(sel).run
+                res = dcFact.delete_container(sel).run
+                if res.failed? 
+                  if res.err_stream =~ /No such container/
+                    remove = cli.yes?("It seems the container already deleted. Do you want to remove it from the list?")
+                    if remove
+                      config.remove_container(imageName, sel)
+                      config.to_storage
+                      break if is_empty?(config.container_names(imageName))
+                    end
+                  else
+                    STDERR.puts "Failed to delete container '#{sel}'. Error was : #{res.err_stream}"
+                  end
+                else
 
-                break if is_empty?(config.container_names(imageName))
+                  config.remove_container(imageName, sel)
+                  config.to_storage
+
+                  break if is_empty?(config.container_names(imageName))
+                end
+
               end
 
             end
