@@ -12,7 +12,7 @@ else
 
   cmd = Dockerun::Command::Dockerun.new 
   res = cmd.parse(ARGV).params.to_h
-  case res[:command]
+  case res[:command].downcase
   when "init"
     initCmd = Dockerun::Command::Init.new
     argv = ARGV[1..-1]
@@ -29,7 +29,7 @@ else
 
     STDOUT.puts "\nDockerfile written to '#{res2}'\n\n"
 
-  when "run"
+  when "run", "r"
 
     begin
       runCmd = Dockerun::Command::Run.new
@@ -59,7 +59,7 @@ else
     end
 
 
-  when "reset-image"
+  when "rmi", "remove-image"
     begin
       riCmd = Dockerun::Command::ResetImage.new
       argv = ARGV[1..-1]
@@ -68,7 +68,7 @@ else
     end
 
 
-  when "rmc"
+  when "remove-container","rmc"
     # remove container
     begin
       riCmd = Dockerun::Command::RemoveContainer.new
