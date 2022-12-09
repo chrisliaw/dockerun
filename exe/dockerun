@@ -4,6 +4,7 @@ require 'tty/prompt'
 require_relative '../lib/dockerun'
 
 if ARGV.length == 0
+  puts "dockerun version #{Dockerun::VERSION}"
   puts Dockerun::Command::Dockerun.new.help
 
 else
