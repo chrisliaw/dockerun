@@ -163,7 +163,7 @@ module Dockerun
 
         res = dcFact.build_image(name, opts).run 
         if res.failed?
-          raise DockerImageBuildFailed, "Building image '#{config.image_name}' failed. Error stream : #{res[:errStream].join(" ")}"
+          raise DockerImageBuildFailed, "Building image '#{name}' failed. Error stream : #{res.err_stream}"
         end
 
       end

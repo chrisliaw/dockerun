@@ -91,6 +91,7 @@ module Dockerun
         f.write YAML.dump(res)
       end
     end
+    alias_method :save, :to_storage
 
   end
 end

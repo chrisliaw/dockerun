@@ -74,6 +74,8 @@ module Dockerun
 
                 config.remove_image(selImg)
 
+                config.to_storage
+
               end
 
               if is_empty?(config.image_names)
