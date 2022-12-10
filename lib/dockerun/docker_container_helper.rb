@@ -47,7 +47,12 @@ module Dockerun
             raise DockerContainerStartFailed, "Failed to start container '#{container_name}'. Error was : #{ress.err_stream}" if ress.failed?
           end
 
-          dcFact.attach_container(container_name).run
+          ucmd = cli.ask("Command to be run inside the container. Empty to attach to existing session : ", value: "/bin/bash")
+          if is_empty?(ucmd)
+            dcFact.attach_container(container_name).run
+          else
+            dcFact.run_command_in_running_container(container_name, ucmd, tty: true, interactive: true).run
+          end
 
         else
 
