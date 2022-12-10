@@ -39,7 +39,7 @@ else
     end
 
 
-  when "run-new-container"
+  when "run-new-container", "rnc"
 
     begin
       runCmd = Dockerun::Command::RunNewContainer.new
@@ -49,7 +49,7 @@ else
     end
 
 
-  when "run-new-image"
+  when "run-new-image", "rni"
 
     begin
       runCmd = Dockerun::Command::RunNewImage.new
