@@ -66,7 +66,9 @@ module Dockerun
             when :source_prompt
               cli.ask("Directory to share with docker : ", required: true)
             when :destination_prompt
-              cli.ask("Directory to show inside docker : ", required: true)
+              src = args.first
+              srcDir = File.basename(src)
+              cli.ask("Directory to show inside docker : ", required: true, value: "/opt/#{srcDir}")
             when :add_mount_to_container
               config.add_mount_to_container(imageName, *args)
             when :add_more_volume_mapping?
