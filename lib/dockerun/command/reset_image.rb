@@ -68,13 +68,21 @@ module Dockerun
                 res = dcFact.delete_image(selImg).run
                 if not res.failed?
                   STDOUT.puts "Image '#{selImg}' successfully deleted."
+                  config.remove_image(selImg)
+                  config.to_storage
+                  STDOUT.puts "Image '#{selImg}' removed from history file"
                 else
                   STDERR.puts "Image '#{selImg}' deletion failed. Error was : #{res.err_stream}"
+                  removeFromHist = cli.yes?("Image '#{selImg}' failed. Do you want to remove from the history file?")
+                  if removeFromHist
+                    config.remove_image(selImg)
+                    config.to_storage
+                    STDOUT.puts "Image '#{selImg}' removed from history file"
+                  else
+                    STDOUT.puts "Image '#{selImg}' shall remain in the history file"
+                  end
                 end
 
-                config.remove_image(selImg)
-
-                config.to_storage
 
               end
 
