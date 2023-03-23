@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    dockerun (0.1.14)
+    dockerun (0.1.15)
       colorize (~> 0.8.0)
       docker-cli (~> 0.2.1)
       teLogger (~> 0.2.0)
