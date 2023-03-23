@@ -2,6 +2,10 @@
 require 'docker/cli'
 
 module Dockerun
+
+  # 
+  # Link to CommandFactory 
+  #
   module DockerCommandFactoryHelper
     
     def dcFact

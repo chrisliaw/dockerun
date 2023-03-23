@@ -4,6 +4,10 @@ require_relative 'docker_command_factory_helper'
 
 module Dockerun
   module CommandHelper
+
+    # 
+    # common functions for docker image management
+    #
     module DockerImageHelper
       include CliHelper::CliPrompt
       include DockerCommandFactoryHelper

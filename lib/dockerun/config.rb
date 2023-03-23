@@ -28,9 +28,9 @@ module Dockerun
 
     def initialize(configHash = {  }, configFileAvail = false)
       @config = configHash 
-      @images = @config[:images]
+      @images = @config[:images] || {  }
       @confFileAvail = configFileAvail
-      @images = {  } if @images.nil?
+      #@images = {  } if @images.nil?
     end
 
     def isConfigFileAvail?
@@ -74,8 +74,8 @@ module Dockerun
       @images[imageName][container][:mount] << mount
     end
 
-    def mount_of_container(container)
-      res = @containers[container]
+    def container_mount_points(imageName, container)
+      res = @images[imageName][container]
       if is_empty?(res) or is_empty?(res[:mount])
         []
       else

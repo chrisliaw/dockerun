@@ -16,6 +16,7 @@ module Dockerun
       include CommandHelper::DockerContainerHelper
       include DockerCommandFactoryHelper
       include CommandHelper::DockerImageHelper
+      include CliHelper::CliPrompt
 
       usage do
         program "dockerun"
@@ -105,20 +106,33 @@ module Dockerun
             case ops
             when :new_container_name
               cli.ask("Please provide a new container name : ", required: true)
+
             when :container_name_exist
               cli.yes?("Container name '#{args.first}' already exist. Proceed with existing?")
+
             when :volume_mapping_required?
-              cli.yes?("Is there any volume mapping required? ")
+              cli.say "\nCurrent configured mount point(s) : \n"
+              config.container_mount_points(imageName, selContName).each do |mp|
+                cli.say " * (Local) #{mp.keys[0]} ==> (Container) #{mp.values[0]}"
+              end
+              cli.yes?("\nIs there any volume mapping required? ")
+
+            when :existing_volume_mapping
+              config.container_mount_points(imageName, selContName)
+
             when :source_prompt
               cli.ask("Directory to share with docker : ", required: true)
+
             when :destination_prompt
               src = args.first
               srcDir = File.basename(src)
               cli.ask("Directory to show inside docker : ", required: true, value: "/opt/#{srcDir}")
             when :add_mount_to_container
               config.add_mount_to_container(imageName, *args)
+
             when :add_more_volume_mapping?
               cli.yes?("Add more volume mapping?")
+
             end
           end
 

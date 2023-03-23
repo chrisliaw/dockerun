@@ -1,4 +1,5 @@
 
+require 'colorize'
 require 'tty/prompt'
 
 module Dockerun

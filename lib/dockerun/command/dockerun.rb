@@ -14,7 +14,7 @@ module Dockerun
 
       argument :command do
         required
-        desc "Command for the dockerun operations. Supported: init, run (r), run-new-container (rnc), run-new-image (rni), remove-image (rmi), remove-container (rmc)"
+        desc "Command for the dockerun operations. Supported: init, run (r), stop (s), run-new-container (rnc), run-new-image (rni), remove-image (rmi), remove-container (rmc)"
       end
 
       def run
