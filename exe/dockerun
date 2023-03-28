@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+require 'toolrack'
+include TR::CondUtils
+
 require 'tty/prompt'
 require_relative '../lib/dockerun'
 
@@ -16,18 +19,33 @@ else
   when "init"
     initCmd = Dockerun::Command::Init.new
     argv = ARGV[1..-1]
-    res2 = initCmd.parse(argv).run do |ops, val|
-      case ops
-      when :multiple_templates_detected
-        pmt.select("There are multiple templates available. Please select one of the template : ") do |m|
-          val.each do |v|
-            m.choice v, v
+    begin
+      res2 = initCmd.parse(argv).run do |ops, val|
+        case ops
+        when :multiple_templates_detected
+          pmt.select("There are multiple templates available. Please select one of the template : ") do |m|
+            val.each do |v|
+              m.choice v, v
+            end
           end
+
+        when :prompt_user_configurables
+          pmt.say "\n The following are the configurable items for the template '#{val[:template]}' : \n", color: :yellow
+          res = {  }
+          val[:userFields].each do |k,v|
+            res[k] = pmt.ask("#{k.to_s.capitalize} : ") do |s|
+              s.required v[:required]  if not_empty?(v[:required]) and is_bool?(v[:required])
+              s.value v[:default].to_s if not_empty?(v[:default])
+            end
+          end
+          res
         end
       end
-    end
 
-    STDOUT.puts "\nDockerfile written to '#{res2}'\n\n"
+      STDOUT.puts "\nDockerfile written to '#{res2}'\n\n"
+    rescue TTY::Reader::InputInterrupt
+      pmt.say "\n\n Aborted\n", color: :yellow
+    end
 
   when "run", "r"
 
@@ -36,6 +54,7 @@ else
       argv = ARGV[1..-1]
       runCmd.parse(argv).run
     rescue TTY::Reader::InputInterrupt
+      pmt.say "\n\n Aborted\n", color: :yellow
     end
 
 
@@ -46,6 +65,7 @@ else
       argv = ARGV[1..-1]
       runCmd.parse(argv).run
     rescue TTY::Reader::InputInterrupt
+      pmt.say "\n\n Aborted\n", color: :yellow
     end
 
 
@@ -56,6 +76,7 @@ else
       argv = ARGV[1..-1]
       runCmd.parse(argv).run
     rescue TTY::Reader::InputInterrupt
+      pmt.say "\n\n Aborted\n", color: :yellow
     end
 
 
@@ -65,6 +86,7 @@ else
       argv = ARGV[1..-1]
       riCmd.parse(argv).run
     rescue TTY::Reader::InputInterrupt
+      pmt.say "\n\n Aborted\n", color: :yellow
     end
 
 
@@ -75,6 +97,7 @@ else
       argv = ARGV[1..-1]
       riCmd.parse(argv).run
     rescue TTY::Reader::InputInterrupt
+      pmt.say "\n\n Aborted\n", color: :yellow
     end
 
 
