@@ -9,6 +9,6 @@ gem "rake", "~> 13.0"
 
 gem "rspec", "~> 3.0"
 
-gem 'docker-cli', git: "docker-cli", branch: "master" 
+#gem 'docker-cli', git: "docker-cli", branch: "master" 
 
 
