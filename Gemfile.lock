@@ -1,9 +1,9 @@
 PATH
   remote: .
   specs:
-    dockerun (0.2.3)
+    dockerun (0.3.2)
       colorize
-      docker-cli
+      docker-cli (>= 0.3.1)
       teLogger
       toolrack
       tty-command

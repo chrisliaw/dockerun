@@ -37,7 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'tty-option' #, "> 0.2.0"
   spec.add_dependency 'colorize'
 
-  spec.add_dependency 'docker-cli' #, ">= 0.1.2"
+  spec.add_dependency 'docker-cli', ">= 0.3.1"
 
   spec.add_development_dependency 'devops_assist'
 

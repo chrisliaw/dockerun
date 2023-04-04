@@ -24,12 +24,11 @@ USER <%= @user_login %>
 # from this point onwards, sudo is required for privileaged operation
 #RUN sudo apt-get install -y curl build-essential
 
-<% if not (@docker_init_file_path.nil? or @docker_init_file_path.empty?) %>
-COPY <%= File.basename(@docker_init_file_path) %> /home/<%= @user_login %>/docker_init.rb 
-#RUN chown <%= @user_login %>:<%= @user_group_name %> /home/<%= @user_login %>/docker_init.rb
-RUN ruby /home/<%= @user_login %>/docker_init.rb
 <% end %>
 
+<% if not (@docker_init_file_path.nil? or @docker_init_file_path.empty?) %>
+COPY <%= File.basename(@docker_init_file_path) %> /tmp/docker_init.rb 
+RUN ruby /tmp/docker_init.rb
 <% end %>
 
 <% if not_empty?(@working_dir) %>
