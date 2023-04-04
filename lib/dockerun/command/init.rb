@@ -1,7 +1,7 @@
 
 require 'tty/option'
 
-require_relative '../template/template_writter'
+require_relative '../template/template_writer'
 
 module Dockerun
   module Command
@@ -59,6 +59,10 @@ module Dockerun
         end
 
         tw = ::Dockerun::Template::TemplateWriter.new(selTemp)
+        userFields = tw.user_configurables
+        if block
+          tw.user_configurables = block.call(:prompt_user_configurables, { template: selTemp, userFields: userFields })
+        end
         res = tw.compile
 
         File.open(out, "w") do |f|

@@ -38,7 +38,7 @@ module Dockerun
           # find history file
           config = ::Dockerun::Config.from_storage
 
-          imageName = build_image_if_not_exist(imageName) do |ops, val|
+          imageName, mount_points = build_image_if_not_exist(imageName) do |ops, val|
             case ops
             when :new_image_name
               cli.ask("Please provide a new image name : ", required: true)

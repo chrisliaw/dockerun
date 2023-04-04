@@ -42,7 +42,7 @@ module Dockerun
                 m.choice n,n
               end
             end
-          end
+          end # find imageName
 
           if is_empty?(config.container_names(imageName))
             STDOUT.puts "There is no container registered under image '#{imageName}'"

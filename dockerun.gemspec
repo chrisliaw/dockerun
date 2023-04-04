@@ -30,14 +30,14 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency 'toolrack', '~> 0.20.1'
-  spec.add_dependency 'teLogger', '~> 0.2.0'
+  spec.add_dependency 'toolrack' #, '> 0.19.1'
+  spec.add_dependency 'teLogger' #, '> 0.2.0'
 
-  spec.add_dependency 'tty-command', "~> 0.10.1"
-  spec.add_dependency 'tty-option', "~> 0.2.0"
-  spec.add_dependency 'colorize', "~> 0.8.0"
+  spec.add_dependency 'tty-command' #, "> 0.10.1"
+  spec.add_dependency 'tty-option' #, "> 0.2.0"
+  spec.add_dependency 'colorize'
 
-  spec.add_dependency 'docker-cli', "~> 0.2.1"
+  spec.add_dependency 'docker-cli' #, ">= 0.1.2"
 
   spec.add_development_dependency 'devops_assist'
 

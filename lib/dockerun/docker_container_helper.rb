@@ -1,5 +1,6 @@
 
 require_relative 'docker_command_factory_helper'
+require_relative 'bundler_helper'
 
 module Dockerun
   module CommandHelper
@@ -9,12 +10,13 @@ module Dockerun
     #
     module DockerContainerHelper
       include DockerCommandFactoryHelper
+      include BundlerHelper
 
       class DockerContainerBuildFailed < StandardError; end
       class DockerContainerStartFailed < StandardError; end
       class DockerContainerStopFailed < StandardError; end
 
-      def run_docker_container(image_name, container_name, &block)
+      def run_docker_container(image_name, container_name, mount_points = [], &block)
      
         raise DockerContainerBuildFailed, "block is required" if not block
         raise DockerContainerBuildFailed, "Image name is required" if is_empty?(image_name)
@@ -68,26 +70,81 @@ module Dockerun
 
         else
 
-          Dockerun.udebug "Container '#{container_name}' doesn't exist. Proceed to create new container."
-          reqVolMap = block.call(:volume_mapping_required?)
-          mount = block.call(:existing_volume_mapping) || []
+          #@workspace_root = "/opt"
+          #@shared_dirs = {}
+
           #mount = []
-          if reqVolMap
+          #sharedInsideDocker = []
+          #res = find_local_dev_gems
+          #puts "Found #{res.length} local gems #{res}"
+          #if not res.empty?
+          #  
+          #  transferMapping = block.call(:transfer_dev_gem_mapping?)
+          #  if transferMapping
+          #    res.each do |name, path|
+          #      tsrc = block.call(:workspace_root_inside_docker, @workspace_root, name, path)
+          #      inPath = File.join(tsrc, name)
+          #      mount << { path => inPath }
+          #      @shared_dirs[name] = inPath 
+          #    end
+          #  end
 
-            loop do
+          #end
 
-              src = block.call(:source_prompt)
-              dest = block.call(:destination_prompt, src)
-              mount << { src => dest }
-              block.call(:add_mount_to_container, container_name, mount.last)
-              repeat = block.call(:add_more_volume_mapping?)
-              break if not repeat
+          #mapProjectDir = block.call(:map_project_dir, @workspace_root)
+          #if not_empty?(mapProjectDir)
+          #  mount << { Dir.getwd => mapProjectDir }
+          #end
 
-            end
+          #reqVolMap = block.call(:volume_mapping_required?)
+          #if reqVolMap
 
-          end
+          #  loop do
+          #    
+          #    block.call(:already_mapped, mount)
 
-          dcFact.create_container_from_image(image_name, interactive: true, tty: true, container_name: container_name, mount: mount).run
+          #    src = block.call(:source_prompt)
+          #    dest = block.call(:destination_prompt, src)
+          #    mount << { src => dest }
+          #    
+          #    add_to_bundle = block.call(:add_to_bundle?, dest)
+          #    if add_to_bundle
+          #      @shared_dirs[File.basename(dest)] = dest
+          #    end
+
+          #    block.call(:add_mount_to_container, container_name, mount.last)
+          #    repeat = block.call(:add_more_volume_mapping?)
+          #    break if not repeat
+
+          #  end
+
+          #end
+
+
+          #insideDockerConfig = File.join(File.dirname(__FILE__),"..","..","template","setup_ruby_devenv.rb.erb")
+          #if File.exist?(insideDockerConfig)
+          #  
+          #  @docker_init_file_path = File.join(Dir.getwd,"on_docker_config")
+
+          #  cont = File.read(insideDockerConfig)
+          #  
+          #  b = binding
+
+          #  res = ERB.new(cont)
+          #  out = res.result(b)
+
+          #  # fixed this name to be used inside Dockerfile 
+          #  File.open(@docker_init_file_path, "w") do |f|
+          #    f.write out
+          #  end
+
+          #  block.call(:on_docker_init_file_path,@docker_init_file_path) 
+
+          #end
+
+
+
+          dcFact.create_container_from_image(image_name, interactive: true, tty: true, container_name: container_name, mount: mount_points).run
 
         end
 
@@ -98,9 +155,10 @@ module Dockerun
       private
       def is_container_exist?(name)
         if not_empty?(name)
-          res = dcFact.find_from_all_container(name).run
+          res = dcFact.find_from_all_container("^#{name}\\z").run
           raise DockerContainerBuildFailed, "Failed to find container. Error was : #{res.err_stream}" if res.failed?
 
+          p res.out_stream
           if res.is_out_stream_empty?
             # nothing found
             [false, ""]
