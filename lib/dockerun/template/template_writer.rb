@@ -13,6 +13,8 @@ module Dockerun
 
       attr_accessor :image, :user_group_id, :user_group_name, :user_id, :user_login, :maintainer, :image_base
       attr_writer :user_configurables
+      attr_accessor :docker_init_file_path
+      attr_accessor :match_user, :working_dir
 
       def self.instance(template)
         tmp = template.to_s.downcase
@@ -34,21 +36,26 @@ module Dockerun
         @user_id = user[:user_id]
         @user_login = user[:login]
         @image_base = :ubuntu
+        @match_user = TR::RTUtils.on_linux?
+        @working_dir = "/opt"
       end
 
       def user_configurables
         fields = {
-          image: { desc: "Image name of the docker based on", required: true },
-          image_base: { desc: "Image is based on which OS? Assumption with be on Debian based. ", default: :ubuntu },
-          maintainer: { desc: "Maintainer of the Dockerfile", default: @maintainer }
+          image: { desc: " Docker image name : ", required: true, type: :ask },
+          image_base: { desc: " Docker image OS : ", default: :debian, type: :select, options: { debian: "Ubuntu/Debian based", not_sure: "Not sure which distro" }.invert },
+          working_dir:  { desc: " Default directory after login : ", type: :ask, default: @working_dir }
         }
 
         if TR::RTUtils.on_linux?
           f2 = {
-            user_group_id: { desc: "User group ID that shall be created in docker. Default to current running user's ID", default: @user_group_id.to_s },
-            user_group_name: { desc: "User group name that shall be created in docker. Default to current running user's group", default: @user_group_name },
-            user_id: { desc: "User ID that shall be created in docker. Default to current running user ID", default: @user_id.to_s },
-            user_login: { desc: "User login name that shall be created in docker. Default to current running user's login", default: @user_login }
+            match_user: { desc: " Match host user with docker user? ", type: :yes? },
+            #maintainer: { desc: "Maintainer of the Dockerfile", default: @maintainer }
+
+            #user_group_id: { desc: "User group ID that shall be created in docker. Default to current running user's ID", default: @user_group_id.to_s },
+            #user_group_name: { desc: "User group name that shall be created in docker. Default to current running user's group", default: @user_group_name },
+            #user_id: { desc: "User ID that shall be created in docker. Default to current running user ID", default: @user_id.to_s },
+            #user_login: { desc: "User login name that shall be created in docker. Default to current running user's login", default: @user_login }
           }
           fields.merge!(f2)
         end

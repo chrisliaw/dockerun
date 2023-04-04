@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+## This file is auto-generated. Changes on this file will be overwritten by newly generate file on next run
+
+# setup env
+WS_ROOT = "<%= @ws_root.nil? ? "/opt" : @ws_root %>"
+
+<% if not (@shared_dirs.nil? or @shared_dirs.empty?) %>
+<% @shared_dirs.each do |name, pa| %>
+`bundle config --global local.<%= name %> <%= pa %>`
+<% end %>
+<% end %>
+
+bashrc = File.join(Dir.home,".bashrc")
+if File.exist?(bashrc)
+  cont = File.read(bashrc) 
+  if not cont =~ /^alias be/
+    `echo "alias be=\\"bundle exec\\"" >> #{bashrc}`
+  end
+end
+
+

@@ -1,7 +1,20 @@
+GIT
+  remote: docker-cli
+  revision: d363083dcabbb86b668c7df3c87882c2fa575a68
+  branch: master
+  specs:
+    docker-cli (0.1.1)
+      ptools
+      teLogger
+      toolrack
+      tty-command
+      tty-prompt
+
 PATH
   remote: .
   specs:
-    dockerun (0.1.17)
+    dockerun (0.1.18)
+      colorize
       docker-cli
       teLogger (> 0.2.0)
       toolrack (> 0.19.1)
@@ -11,6 +24,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    colorize (0.8.1)
     devops_assist (0.3.11)
       git_cli
       git_cli_prompt (~> 0.3.3)
@@ -19,11 +33,6 @@ GEM
       toolrack
       tty-prompt
     diff-lcs (1.5.0)
-    docker-cli (0.2.0)
-      ptools
-      teLogger
-      tty-command
-      tty-prompt
     git_cli (0.11.2)
       gvcs
       ptools (~> 1.4.0)
@@ -69,10 +78,12 @@ GEM
     wisper (2.0.1)
 
 PLATFORMS
+  ruby
   x86_64-linux
 
 DEPENDENCIES
   devops_assist
+  docker-cli!
   dockerun!
   rake (~> 13.0)
   rspec (~> 3.0)

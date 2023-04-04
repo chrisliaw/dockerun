@@ -3,6 +3,9 @@
 require 'toolrack'
 require 'teLogger'
 
+require 'tty/prompt'
+require 'colorize'
+
 require_relative "dockerun/version"
 
 require_relative 'dockerun/command/dockerun'

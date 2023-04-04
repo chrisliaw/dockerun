@@ -1,20 +1,27 @@
 
 require_relative 'cli_prompt'
 require_relative 'docker_command_factory_helper'
+require_relative 'bundler_helper'
+require_relative 'template/template_writer'
 
 module Dockerun
   module CommandHelper
     module DockerImageHelper
       include CliHelper::CliPrompt
       include DockerCommandFactoryHelper
+      include BundlerHelper
 
       class DockerfileNotExist < StandardError; end
       class DockerImageBuildFailed < StandardError; end
       class DockerImageDeleteFailed < StandardError; end
+      class DockerImagePrebuiltConfigFailed < StandardError; end
 
-      def load_dockerfile(root = Dir.getwd)
+      def load_dockerfile(root = Dir.getwd, dockerInitPath = nil, &block)
 
-        df = Dir.glob(File.join(root,"Dockerfile*"))
+        #avail = ::Dockerun::Template::TemplateEngine.available_templates
+        df = ::Dockerun::Template::TemplateEngine.available_templates
+
+        #df = Dir.glob(File.join(root,"Dockerfile*"))
         if df.length == 0
           raise DockerfileNotExist, "Dockerfile not yet available. Please create one or run init first."
         end
@@ -30,7 +37,32 @@ module Dockerun
           selectedDf = df.first
         end
 
-        selectedDf
+        tw = ::Dockerun::Template::TemplateWriter.new(selectedDf)
+        tw.docker_init_file_path = dockerInitPath
+        userFields = tw.user_configurables
+        if block
+          tw.user_configurables = block.call(:prompt_user_configurables, { template: selectedDf, userFields: userFields })
+        end
+        res = tw.compile
+
+        loc = "."
+        #loc = params[:location] if not_empty?(params[:location])
+
+        loc = File.expand_path(loc)
+        out = nil
+        if File.directory?(loc)
+          out = File.join(loc, "Dockerfile.dockerun")
+        else
+          out = File.join(File.dirname(loc), "Dockerfile.dockerun")
+        end
+
+        File.open(out, "w") do |f|
+          f.write res
+        end
+
+
+        #selectedDf
+        File.basename(out)
           
       end
 
@@ -38,6 +70,7 @@ module Dockerun
        
         raise DockerImageBuildFailed, "block is required" if not block
 
+        mountPoints = []
         if is_empty?(name)
           reuse = false
           loop do
@@ -50,20 +83,184 @@ module Dockerun
           if reuse
             
           else
-            dockerfile = load_dockerfile(Dir.getwd)
+
+            #@workspace_root = "/opt"
+            #@shared_dirs = {}
+
+            #mount = []
+            #sharedInsideDocker = []
+            #res = find_local_dev_gems
+            #puts "Found #{res.length} local gems #{res}"
+            #if not res.empty?
+
+            #  transferMapping = block.call(:transfer_dev_gem_mapping?)
+            #  if transferMapping
+            #    res.each do |name, path|
+            #      tsrc = block.call(:workspace_root_inside_docker, @workspace_root, name, path)
+            #      inPath = File.join(tsrc, name)
+            #      mount << { path => inPath }
+            #      @shared_dirs[name] = inPath 
+            #    end
+            #  end
+
+            #end
+
+            #mapProjectDir = block.call(:map_project_dir, @workspace_root)
+            #if not_empty?(mapProjectDir)
+            #  mount << { Dir.getwd => mapProjectDir }
+            #end
+
+            #reqVolMap = block.call(:volume_mapping_required?)
+            #if reqVolMap
+
+            #  loop do
+
+            #    block.call(:already_mapped, mount)
+
+            #    src = block.call(:source_prompt)
+            #    dest = block.call(:destination_prompt, src)
+            #    mount << { src => dest }
+
+            #    add_to_bundle = block.call(:add_to_bundle?, dest)
+            #    if add_to_bundle
+            #      @shared_dirs[File.basename(dest)] = dest
+            #    end
+
+            #    block.call(:add_mount_to_container, container_name, mount.last)
+            #    repeat = block.call(:add_more_volume_mapping?)
+            #    break if not repeat
+
+            #  end
+
+            #end
+
+
+            #insideDockerConfig = File.join(File.dirname(__FILE__),"..","..","template","setup_ruby_devenv.rb.erb")
+            #if File.exist?(insideDockerConfig)
+
+            #  @docker_init_file_path = File.join(Dir.getwd,"on_docker_config")
+
+            #  cont = File.read(insideDockerConfig)
+
+            #  b = binding
+
+            #  res = ERB.new(cont)
+            #  out = res.result(b)
+
+            #  # fixed this name to be used inside Dockerfile 
+            #  File.open(@docker_init_file_path, "w") do |f|
+            #    f.write out
+            #  end
+
+            #  block.call(:on_docker_init_file_path,@docker_init_file_path) 
+
+            #end
+
+            mountPoints, dockerinit = prompt_mount_points(&block)
+
+
+            dockerfile = load_dockerfile(Dir.getwd, dockerinit, &block)
             build_docker_image(name, dockerfile: dockerfile)
           end
 
         else
 
             if not is_image_existed?(name)
-              dockerfile = load_dockerfile(Dir.getwd)
+
+              mountPoints, dockerinit = prompt_mount_points(&block)
+
+              dockerfile = load_dockerfile(Dir.getwd, dockerinit, &block)
               build_docker_image(name, dockerfile: dockerfile)
             end
 
         end
 
-        name
+        [name, mountPoints]
+
+      end
+
+      def prompt_mount_points(&block)
+
+        raise DockerImagePrebuiltConfigFailed, "block is mandatory" if not block
+
+        @workspace_root = "/opt"
+        @shared_dirs = {}
+
+        block.call(:prompt_mount_points_starting)
+
+        mount = []
+        res = find_local_dev_gems
+        #puts "Found #{res.length} local gems #{res}"
+        if not res.empty?
+
+          transferMapping = block.call(:transfer_dev_gem_mapping?, res)
+          if transferMapping
+            res.each do |name, path|
+              tsrc = block.call(:workspace_root_inside_docker, @workspace_root, name, path)
+              mount << { path => tsrc }
+              @shared_dirs[name] = tsrc 
+            end
+          end
+
+        end
+
+        mapProjectDir = block.call(:map_project_dir, @workspace_root)
+        if not_empty?(mapProjectDir)
+          mount << { Dir.getwd => mapProjectDir }
+        end
+
+        reqVolMap = block.call(:volume_mapping_required?)
+        if reqVolMap
+
+          loop do
+
+            block.call(:already_mapped, mount)
+
+            src = block.call(:source_prompt, { control: [ "Type 's' to skip" ] })
+            if src == "s"
+              block.call(:volume_mapping_skipped)
+              break
+            end
+
+            dest = block.call(:destination_prompt, src)
+            mount << { src => dest }
+
+            add_to_bundle = block.call(:add_to_bundle?, dest)
+            if add_to_bundle
+              @shared_dirs[File.basename(dest)] = dest
+            end
+
+            block.call(:add_mount_to_container, container_name, mount.last)
+            repeat = block.call(:add_more_volume_mapping?)
+            break if not repeat
+
+          end
+
+        end
+
+
+        insideDockerConfig = File.join(File.dirname(__FILE__),"..","..","template","setup_ruby_devenv.rb.erb")
+        if File.exist?(insideDockerConfig)
+
+          @docker_init_file_path = File.join(Dir.getwd,"on_docker_config")
+
+          cont = File.read(insideDockerConfig)
+
+          b = binding
+
+          res = ERB.new(cont)
+          out = res.result(b)
+
+          # fixed this name to be used inside Dockerfile 
+          File.open(@docker_init_file_path, "w") do |f|
+            f.write out
+          end
+
+          block.call(:on_docker_init_file_path,@docker_init_file_path) 
+
+        end
+
+        [mount, @docker_init_file_path]
 
       end
 
