@@ -54,7 +54,8 @@ module Dockerun
           Dockerun.udebug "Find out of container '#{container_name}' is running..." 
           #res = dcFact.find_running_container(container_name).run
           #if not res.failed? and res.is_out_stream_empty?
-          if not is_container_running?(container_name)
+          st, _ = is_container_running?(container_name)
+          if not st
             # not running
             Dockerun.udebug "Container '#{container_name}' does not seems to be running. Starting container."
             ress = dcFact.start_container(container_name).run
@@ -158,7 +159,6 @@ module Dockerun
           res = dcFact.find_from_all_container("^#{name}\\z").run
           raise DockerContainerBuildFailed, "Failed to find container. Error was : #{res.err_stream}" if res.failed?
 
-          p res.out_stream
           if res.is_out_stream_empty?
             # nothing found
             [false, ""]
@@ -179,10 +179,17 @@ module Dockerun
 
       def is_container_running?(name)
         if not_empty?(name)
-          res = dcFact.find_running_container(name).run
-          not res.failed? and not res.is_out_stream_empty?
+          res = dcFact.find_running_container("^#{name}\\z").run
+          raise DockerContainerBuildFailed, "Failed to find is running container. Error was : #{res.err_stream}" if res.failed?
+
+          if res.is_out_stream_empty?
+            # nothing found
+            [false, ""]
+          else
+            [true, res.out_stream]
+          end
         else
-          false
+          [false, nil]
         end
       end
 
