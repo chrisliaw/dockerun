@@ -165,6 +165,9 @@ module Dockerun
 
             dockerfile = load_dockerfile(Dir.getwd, dockerinit, &block)
             build_docker_image(name, dockerfile: dockerfile)
+
+            FileUtils.rm(dockerinit) if File.exist?(dockerinit)
+
           end
 
         else
@@ -175,6 +178,8 @@ module Dockerun
 
               dockerfile = load_dockerfile(Dir.getwd, dockerinit, &block)
               build_docker_image(name, dockerfile: dockerfile)
+
+              FileUtils.rm(dockerinit) if File.exist?(dockerinit)
             end
 
         end
